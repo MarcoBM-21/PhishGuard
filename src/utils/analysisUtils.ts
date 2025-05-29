@@ -1,48 +1,43 @@
 import { Analysis, AnalysisType, AnalysisResult } from '../types';
 import { saveAnalysis } from './storage';
 
-// This function simulates the analysis process
-// In a real extension, this would call an API or use ML models
 export const analyzeContent = async (
-  type: AnalysisType,
-  content: string
+    type: AnalysisType,
+    content: string
 ): Promise<AnalysisResult> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  
-  // Simple mock detection logic for demonstration
-  // URL analysis
-  if (type === 'url') {
-    const suspiciousTerms = [
-      'phishing', 'secure-login', 'account-verify', 
-      'suspicious', 'bank-secure', 'login-verify'
-    ];
-    return suspiciousTerms.some(term => content.toLowerCase().includes(term)) 
-      ? 'PHISHING' 
-      : 'NO PHISHING';
+  try {
+    const url =
+        type === 'url'
+            ? 'https://phishing-backend-production.up.railway.app/predict_url'
+            : 'https://phishing-backend-production.up.railway.app/predict_text';
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ [type]: content }),
+    });
+
+    if (!response.ok) throw new Error('Error de red');
+
+    const data = await response.json();
+
+    return data.is_phishing ? 'PHISHING' : 'NO PHISHING';
+
+  } catch (error) {
+    console.error('Error al analizar:', error);
+    return 'ERROR';
   }
-  
-  // Email content analysis
-  if (type === 'email') {
-    const suspiciousTerms = [
-      'urgent action required', 'verify your account', 
-      'password expired', 'suspicious activity', 
-      'click here to secure', 'payment information update'
-    ];
-    return suspiciousTerms.some(term => content.toLowerCase().includes(term)) 
-      ? 'PHISHING' 
-      : 'NO PHISHING';
-  }
-  
-  return 'NO PHISHING';
 };
 
+
 export const performAnalysis = async (
-  type: AnalysisType,
-  content: string
+    type: AnalysisType,
+    content: string
 ): Promise<Analysis> => {
   const result = await analyzeContent(type, content);
-  
+
   const analysis: Analysis = {
     id: Date.now().toString(),
     type,
@@ -50,18 +45,13 @@ export const performAnalysis = async (
     result,
     timestamp: Date.now(),
   };
-  
-  // Save to storage
+
   await saveAnalysis(analysis);
-  
   return analysis;
 };
 
-export const formatTimestamp = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleString();
-};
+export const formatTimestamp = (timestamp: number): string =>
+    new Date(timestamp).toLocaleString();
 
-export const truncateContent = (content: string, maxLength: number = 50): string => {
-  if (content.length <= maxLength) return content;
-  return `${content.substring(0, maxLength)}...`;
-};
+export const truncateContent = (content: string, maxLength: number = 50): string =>
+    content.length <= maxLength ? content : `${content.substring(0, maxLength)}...`;
