@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, ShieldAlert, ArrowLeft, AlertTriangle, FileText } from 'lucide-react';
+import { Shield, ShieldAlert, ArrowLeft, AlertTriangle, FileText, Timer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Analysis } from '../types';
 import { formatTimestamp } from '../utils/analysisUtils';
@@ -11,6 +11,8 @@ interface AnalysisResultProps {
 const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
   const navigate = useNavigate();
   const isPhishing = analysis.result === 'PHISHING';
+
+  const duration = sessionStorage.getItem('analysisDuration');
   
   return (
     <div className="max-w-md w-full mx-auto">
@@ -61,6 +63,14 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
           <div className="mb-4">
             <h3 className="text-sm font-medium text-gray-500 mb-1">Tiempo de análisis</h3>
             <p className="text-sm">{formatTimestamp(analysis.timestamp)}</p>
+          </div>
+
+          <div className="mb-4">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Duración de detección</h3>
+            <div className="flex items-center gap-2 text-sm text-gray-800">
+              <Timer className="h-4 w-4" />
+              {duration ? `${duration} segundos` : 'Desconocido'}
+            </div>
           </div>
           
           {isPhishing && (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Globe, Mail, AlertTriangle } from 'lucide-react';
+import { Globe, Mail, AlertTriangle, Loader2 } from 'lucide-react';
 import { AnalysisType } from '../types';
 import { useAnalysis } from '../context/AnalysisContext';
 
@@ -8,6 +8,7 @@ const AnalysisForm: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AnalysisType>('url');
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
   const { startAnalysis } = useAnalysis();
   const navigate = useNavigate();
@@ -43,12 +44,20 @@ const AnalysisForm: React.FC = () => {
     
     if (!validate()) return;
     
+    setIsLoading(true);
+    const start = performance.now();
+
     try {
       await startAnalysis(activeTab, content);
+      const end = performance.now();
+      const duration = ((end - start) / 1000).toFixed(2);
+      sessionStorage.setItem('analysisDuration', duration); 
       navigate('/result');
     } catch (err) {
       setError('An error occurred. Please try again.');
       console.error(err);
+    } finally {
+      setIsLoading (false);
     }
   };
   
@@ -119,9 +128,14 @@ const AnalysisForm: React.FC = () => {
         
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          disabled={isLoading}
+          className="w-full h-11 flex items-center justify-center bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60"
         >
-          Analizar ahora
+          {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              'Analizar ahora'
+            )}
         </button>
       </form>
     </div>
