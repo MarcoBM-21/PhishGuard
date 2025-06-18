@@ -21,7 +21,7 @@ const AnalysisForm: React.FC = () => {
   
   const validate = (): boolean => {
     if (!content.trim()) {
-      setError(`Please enter a ${activeTab} to analyze`);
+      setError('El campo se encuentra vacío');
       return false;
     }
     
@@ -30,9 +30,14 @@ const AnalysisForm: React.FC = () => {
         // Basic URL validation
         new URL(content);
       } catch {
-        setError('Please enter a valid URL');
+        setError('URL inválida');
         return false;
       }
+    }
+
+    if (activeTab === 'email' && content.trim().length < 40) {
+      setError('No hay suficiente información');
+      return false;
     }
     
     setError('');
@@ -54,7 +59,7 @@ const AnalysisForm: React.FC = () => {
       sessionStorage.setItem('analysisDuration', duration); 
       navigate('/result');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError('Ha ocurrido un error, por favor intentar denuevo');
       console.error(err);
     } finally {
       setIsLoading (false);

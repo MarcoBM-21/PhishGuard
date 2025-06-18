@@ -2,35 +2,44 @@ import { Analysis, AnalysisType, AnalysisResult } from '../types';
 import { saveAnalysis } from './storage';
 
 export const analyzeContent = async (
-    type: AnalysisType,
-    content: string
+  type: AnalysisType,
+  content: string
 ): Promise<AnalysisResult> => {
   try {
+    // Mapeo interno: email → text
+    const mappedType = type === 'email' ? 'text' : type;
+
     const url =
-        type === 'url'
-            ? 'https://phishing-backend-production.up.railway.app/predict_url'
-            : 'https://phishing-backend-production.up.railway.app/predict_text';
+      mappedType === 'url'
+        ? 'https://phishing-backend-production.up.railway.app/predict/url'
+        : 'https://phishing-backend-production.up.railway.app/predict/text';
+
+    const body =
+      mappedType === 'url'
+        ? { url: content }
+        : { text: content };
+
+    console.log('Enviando a:', url);
+    console.log('Cuerpo:', body);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ [type]: content }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) throw new Error('Error de red');
 
     const data = await response.json();
-
     return data.is_phishing ? 'PHISHING' : 'NO PHISHING';
 
   } catch (error) {
     console.error('Error al analizar:', error);
-    return 'ERROR';
+    return 'INVÁLIDO';
   }
 };
-
 
 export const performAnalysis = async (
     type: AnalysisType,

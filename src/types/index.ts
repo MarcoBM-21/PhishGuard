@@ -2,7 +2,7 @@ export type AnalysisType = 'url' | 'email';
 
 export type AnalysisStatus = 'idle' | 'loading' | 'complete';
 
-export type AnalysisResult = 'PHISHING' | 'NO PHISHING' | 'ERROR';
+export type AnalysisResult = 'PHISHING' | 'NO PHISHING' | 'INVÁLIDO';
 
 export interface Analysis {
   id: string;

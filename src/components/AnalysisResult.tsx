@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, ShieldAlert, ArrowLeft, AlertTriangle, FileText, Timer } from 'lucide-react';
+import { Shield, ShieldAlert, ArrowLeft, AlertTriangle, FileText, Timer, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Analysis } from '../types';
 import { formatTimestamp } from '../utils/analysisUtils';
@@ -11,39 +11,57 @@ interface AnalysisResultProps {
 const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
   const navigate = useNavigate();
   const isPhishing = analysis.result === 'PHISHING';
+  const isValid = analysis.result === 'NO PHISHING';
+  const isInvalid = analysis.result === 'INVÁLIDO';
 
   const duration = sessionStorage.getItem('analysisDuration');
   
+  let borderColor, bgColor, iconBg, iconColor, textColor, IconComponent, message;
+
+  if (isPhishing) {
+    borderColor = 'border-red-500';
+    bgColor = 'bg-red-50';
+    iconBg = 'bg-red-100';
+    iconColor = 'text-red-500';
+    textColor = 'text-red-600';
+    IconComponent = ShieldAlert;
+    message = 'Este contenido tiene indicadores potenciales de Phishing';
+  } else if (isValid) {
+    borderColor = 'border-green-500';
+    bgColor = 'bg-green-50';
+    iconBg = 'bg-green-100';
+    iconColor = 'text-green-500';
+    textColor = 'text-green-600';
+    IconComponent = Shield;
+    message = 'Este contenido aparenta ser legítimo';
+  } else {
+    borderColor = 'border-yellow-500';
+    bgColor = 'bg-yellow-50';
+    iconBg = 'bg-yellow-100';
+    iconColor = 'text-yellow-500';
+    textColor = 'text-yellow-600';
+    IconComponent = XCircle;
+    message = 'No se pudo determinar la legitimidad del contenido';
+  }
+
   return (
     <div className="max-w-md w-full mx-auto">
       <div 
-        className={`bg-white rounded-lg shadow-lg overflow-hidden border-t-8 ${
-          isPhishing ? 'border-red-500' : 'border-green-500'
-        }`}
+        className={`bg-white rounded-lg shadow-lg overflow-hidden border-t-8 ${borderColor}`}
       >
-        <div className={`p-6 ${isPhishing ? 'bg-red-50' : 'bg-green-50'}`}>
+        <div className={`p-6 ${bgColor}`}>
           <div className="flex justify-center mb-4">
-            {isPhishing ? (
-              <div className="p-3 bg-red-100 rounded-full">
-                <ShieldAlert className="h-12 w-12 text-red-500" />
-              </div>
-            ) : (
-              <div className="p-3 bg-green-100 rounded-full">
-                <Shield className="h-12 w-12 text-green-500" />
-              </div>
-            )}
+            <div className={`p-3 ${iconBg} rounded-full`}>
+              <IconComponent className={`h-12 w-12 ${iconColor}`} />
+            </div>
           </div>
           
-          <h2 className={`text-2xl font-bold text-center ${
-            isPhishing ? 'text-red-600' : 'text-green-600'
-          }`}>
+          <h2 className={`text-2xl font-bold text-center ${textColor}`}>
             {analysis.result}
           </h2>
           
           <p className="text-gray-600 text-center mt-2">
-            {isPhishing 
-              ? 'This content contains potential phishing indicators.' 
-              : 'This content appears to be legitimate.'}
+            {message}
           </p>
         </div>
         
@@ -85,6 +103,21 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
                     <li>No proporcione información personal</li>
                     <li>Informe esto a su departamento de TI si corresponde</li>
                   </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {isInvalid && (
+            <div className="mb-4 p-3 bg-yellow-50 rounded-md border border-yellow-100">
+              <div className="flex">
+                <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium text-yellow-800 text-sm">Información</h4>
+                  <p className="mt-1 text-xs text-yellow-700">
+                    El contenido proporcionado no pudo ser analizado correctamente. 
+                    Esto puede deberse a un formato no compatible o contenido insuficiente.
+                  </p>
                 </div>
               </div>
             </div>
